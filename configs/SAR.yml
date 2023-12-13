@@ -1,0 +1,91 @@
+data:
+    dataset: "SAR"
+    image_size: 128
+    channels: 1
+    num_workers: 8
+    data_dir: "scratch/"
+#    data_dir: "/home/jbwei/ybma/WeatherDiffusion-main/data/S_12"
+#    data_dir: "/home/jbwei/190/ybma/code/data"
+    conditional: True
+
+model:
+    in_channels: 1
+    out_ch: 2 # 1 if not learn_sigma(iddpm) else 2
+    ch: 128
+    ch_mult: [1, 1, 2, 3, 4] # 通道算子
+#    ch_mult: [1, 2, 3, 4] # 通道算子
+    num_res_blocks: 2
+    attn_resolutions: [32,16,8] # iddpm中[16,8],这里改成[32,16,8]
+#    attn_resolutions: [16] # iddpm中[16,8],这里改成[32,16,8]
+    dropout: 0.0
+    ema_rate: 0.999
+    ema: True
+    resamp_with_conv: True
+
+diffusion:
+    mode: train # or valid
+    beta_schedule: linear
+    beta_start: 0.0001
+    beta_end: 0.02
+    num_diffusion_timesteps: 1000
+
+training:
+    name: "Synthesis_no_log_SAR" # SAR or SAR_GRD or Synthesis_SAR or Synthesis_no_log_SAR
+    #v1是原始no_log_synthesis,ch_mult: [1, 2, 3, 4],image_size:64,attn_resolutions: [16,8]
+    #v2是直方图均衡处理后的syn,效果差
+    #v3是更改网络结构的模型(第一、四层加注意力块[128,16]，ch:64，imagesize:128,batch:2),
+    #v4(第四五层加注意力，ch:128,imagesize:128,batch:10,ch_mult: [1, 1, 2, 3, 4]) 效果不错
+    #v5(第四五层加注意力，resblock:3，ch:128,imagesize:128,batch:15) 变差
+    #v6(第二四五层加注意力，resblock:2,upsample改变) 变差
+    #v7(第三四五层加注意力，resblock:2,upsample改变,ch_mult: [1, 1, 2, 3, 4]) 跟v4效果差不多，合成图像的数值达到顶峰
+    #v8(第三四五层加注意力，resblock:2,upsample改变,model.ch:64) 效果很差
+    #v9用v7模型测试dpm-solver采样 失败
+    #v10(第四五层加注意力，ch:128,imagesize:128,upsample改变) 效果不如v7
+    #v11(第三四层加注意力，resblock:2,改用UC_merced数据集,imagesize:64,ch:128,ch_mult: [1, 2, 3, 4],epoch:500)
+    #v11_1(第三四层加注意力，resblock:2,改用UC_merced数据集,imagesize:64,ch:128,ch_mult: [1, 2, 3, 4],epoch:800)
+    #v12(ch_mult: [1, 1, 2, 2, 4, 4],attn_resolutions: [32,16,8],resblock:2,upsample改变)
+    #v13(与v1一样，验证只留mse) # EPD-ROA变差
+    #v14_v1(与v1一样，学习率提高10倍，0.0002) 差(v1测试文件夹)
+    #v15(与v1一样，数据集混和UC(1600)与S2(400))
+    #v16(与v1一样，数据集混和UC(1600)与S2(1600),学习率提高到0.0002)
+    #v17_v4(v4测试文件夹)
+    #v18_v7(v7测试文件夹)
+    #v19_v11(v11_1测试文件夹)
+    #v20(与v7一样网络结构，改用UC_merced数据集,batch_size=16,600epochs)
+    #v21(与v7一样网络结构，S2数据集，训练400epochs)
+    #v21_1(与v7一样网络结构，S2数据集，训练600epochs,batch_size=18) 不断点训
+    #v22(与v7一样网络结构，S2数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1) 不断点训
+    #v23(与v7一样网络结构，S2数据集，训练600epochs,batch_size=18,去掉kl,tv_loss_weight=1) 不断点训 效果变差
+    #v24(与v7一样网络结构，S2数据集，训练600epochs,batch_size=18,nn.MSELoss()+kl*1,tv_loss_weight=1) 不断点训 效果变差
+    #v25(与v7一样网络结构，S2数据集，训练600epochs,batch_size=18,nn.MSELoss()+kl*10,tv_loss_weight=1) 不断点训
+    #v26(与v7一样网络结构，S2新数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1) 不断点训
+    #v27(与v7一样网络结构128-11234，S2新数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1,去掉data_transform) 不断点训
+    #v28(与v7一样网络结构，S2新数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1,去掉data_transform) 断点训到1000
+    #v29(与v7一样网络结构，S2新数据集，训练600epochs,batch_size=18,nn.MSELoss()+kl_weight=1,tv_loss_weight=1,去掉data_transform) 不断点训
+    #v30(与v7一样网络结构，UCmerced数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1,去掉data_transform) 不断点训
+    #v31(与v7一样网络结构，S2新数据集，训练600epochs,batch_size=18,nn.MSELoss()+kl_weight=1,tv_loss_weight=1,去掉data_transform) 不断点训
+    #v32(与v7一样网络结构，S2新数据集，训练600epochs,batch_size=18,nn.MSELoss()+kl_weight=1,tv_loss_weight=1,去掉data_transform,加上梯度损失) 不断点训
+    #v33(与v7一样网络结构，S2新数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1,去掉data_transform,unet中替换其他注意力块) 不断点训
+    #v34(与v7一样网络结构，S2新数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1,去掉data_transform,加上数据增强) 不断点训
+    #v35(网络结构变为64-12488，S2新数据集，训练600epochs,batch_size=18,kl_weight=10000,tv_loss_weight=1,去掉data_transform) 不断点训
+    version: "v27"
+    patch_n: 4
+    batch_size: 5
+    n_epochs: 410
+    n_iters: 200
+    #snapshot_freq: 1000
+    validation_freq: 160 # 2700 pics 1500 steps=10 epochs 、UC_merced 1641 pics 1000 steps=10 epochs、mixture 2041 pics 1360 steps=10 epochs, 3241 pics 2160 steps = 10 epochs
+
+sampling:
+    batch_size: 1
+    last_only: True
+    sample_type: "ddim" # added chose ddim or dpm_solver++
+    schedule: "linear" # added
+    filelist: "test.txt" # "syn_val.txt" or "real_sar_test.txt" or "syn_test.txt" or "test.txt"
+
+optim:
+    weight_decay: 0.000
+    optimizer: "Adam"
+    lr: 0.00002 #0.00002
+    amsgrad: False
+    eps: 0.00000001
