@@ -10,15 +10,15 @@ The newly designed dataset named S2FS which contains train, eval and test images
 
 OneDrive:
 
-    [](https://1drv.ms/u/s!AjrSfO8SPX7NawtLJ69kpbErnyo?e=NkTrtA)
+    https://1drv.ms/u/s!AjrSfO8SPX7NawtLJ69kpbErnyo?e=NkTrtA
     code:
     
 Baidu Netdisk:
 
-    [https://pan.baidu.com/s/1SY_epKTCQ6ugKuiBrtHppQ](https://pan.baidu.com/s/1SY_epKTCQ6ugKuiBrtHppQ)
+    https://pan.baidu.com/s/1SY_epKTCQ6ugKuiBrtHppQ
     code:6cta
     
-if the links work improperly, please contact us via [wei-jing-bo@163.com](wei-jing-bo@163.com).
+if the links work improperly, please contact us via [wei-jing-bo@163.com](mailto:wei-jing-bo@163.com).
 
 2.Eval model
 
