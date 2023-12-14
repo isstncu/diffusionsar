@@ -37,13 +37,13 @@ class SAR:
             print("=> training {} set...".format(self.config.training.name))
         else:
             print("=> evaluating SAR set...")
-        train_dataset = SARDataset(dir=os.path.join(self.config.data.data_dir, 'data', 'real_sar', 'train'),
+        train_dataset = SARDataset(dir=os.path.join(self.config.data.data_dir, 'data', 'train'),
                                         n=self.config.training.patch_n,
                                         patch_size=self.config.data.image_size,
                                         transforms=self.transforms,
                                         filelist=None,
                                         parse_patches=parse_patches)
-        val_dataset = SARDataset(dir=os.path.join(self.config.data.data_dir, 'data', 'real_sar', 'val'),
+        val_dataset = SARDataset(dir=os.path.join(self.config.data.data_dir, 'data', 'val'),
                                       n=self.config.training.patch_n, # 16
                                       patch_size=self.config.data.image_size,# 64
                                       transforms=self.transforms,
@@ -108,7 +108,6 @@ class SARDataset(torch.utils.data.Dataset):
             #     input_names = [i.strip() for i in contents]
             #     gt_names = [i.strip().replace('input', 'gt') for i in input_names] #
         elif filelist == "real_sar_test.txt":
-            # 测真实SAR
             self.dir = None
             test_list = os.path.join("scratch/data/synthesis_v2/SAR_test", filelist)
             with open(test_list) as f:
@@ -116,23 +115,12 @@ class SARDataset(torch.utils.data.Dataset):
                 input_names = [os.path.join("scratch/data/synthesis_v2/SAR_test", i.strip()) for i in contents]
                 gt_names = input_names
         elif filelist =="test.txt":
-            # 测模拟SAR
             self.dir = None
             test_list = os.path.join("scratch/data/synthesis_v2/syn_ture", filelist)
             with open(test_list) as f:
                 contents = f.readlines()
                 input_names = [os.path.join("scratch/data/synthesis_v2/syn_ture/L1", i.strip()) for i in contents]
                 gt_names = input_names
-            # 测一组图
-            # self.dir = None
-            # self.test_dir = "/home/jbwei/190/ybma/code/data/train/SAR"
-            # input_names, gt_names = [], []
-            # sar_inputs = os.path.join(self.test_dir, 'VH')
-            # images = [f for f in listdir(sar_inputs) if isfile(os.path.join(sar_inputs, f))]
-            # assert len(images) == 5421
-            # images = images[3000:]
-            # input_names += [os.path.join(sar_inputs, i) for i in images]
-            # gt_names = input_names
 
         self.input_names = input_names
         self.gt_names = gt_names
