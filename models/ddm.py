@@ -229,7 +229,7 @@ class DenoisingDiffusion(object):
         #print(pred_noise.shape)
         length = pred_noise.shape[0]
         mse = torch.nn.MSELoss()
-        mse_losses = (noise - pred_noise).square().sum(dim=(1, 2, 3)).mean(dim=0)# 16x1x64x64的16张图片mse的平均值，不是每个像素mse的平均值
+        mse_losses = (noise - pred_noise).square().sum(dim=(1, 2, 3)).mean(dim=0)
         print('MSE:{0:.6f}, KL:{1:.6f}'.format(mse_losses, kl_losses * kl_loss_weight))
         return mse_losses + kl_loss_weight * kl_losses
 
@@ -285,7 +285,7 @@ class DenoisingDiffusion(object):
                 data_start = time.time()
 
                 if (self.step-38000+1) % self.config.training.validation_freq == 0:
-                    loss_function = Loss(self.device, 10) # DG + TV loss ID-CNN中λ=2e-3
+                    loss_function = Loss(self.device, 10)
                     self.model.eval()
                     DG_loss, TV_loss, val_loss, ssim, psnr = self.sample_validation_patches(val_loader, self.step, loss_function)
                     print("validating->ssim:{:.4f}, psnr:{:.4f}, DG_loss:{:.4f}, TV_loss:{:.4f}, loss:{:.4f}".format(ssim, psnr, DG_loss, TV_loss, val_loss))
