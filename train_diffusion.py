@@ -19,14 +19,13 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "3"
 def parse_args_and_config():
     parser = argparse.ArgumentParser(description='Training Patch-Based Denoising Diffusion Models')
     parser.add_argument("--project", type=str, default="SAR-Diffusion")
-    # parser.add_argument("--model-name", type=str, default="Synthesis_no_log_v36")
     parser.add_argument("--model-name", type=str, default="SAR_Despeckling")
     parser.add_argument("--config", default='SAR.yml', type=str,
                         help="Path to the config file")
-    parser.add_argument('--resume', default='./scratch/ckpts/Synthesis_no_log_SAR_v27_ddpm.pth.tar', type=str,
+    parser.add_argument('--resume', default='./scratch/ckpts/SAR_Despeckling_ddpm.pth.tar', type=str,
                         help='Path for checkpoint to load and resume')
     parser.add_argument("--sampling_timesteps", type=int, default=25,
-                        help="Number of implicit sampling steps for validation image patches") # ddim 1000 / 25 = 40
+                        help="Number of implicit sampling steps for validation image patches") # ddim
     parser.add_argument("--image_folder", default='results/images/', type=str,
                         help="Location to save restored validation image patches")
     parser.add_argument('--seed', default=61, type=int, metavar='N',
