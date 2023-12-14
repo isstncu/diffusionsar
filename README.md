@@ -10,8 +10,8 @@ The newly designed dataset named S2FS which contains train, eval and test images
 
 OneDrive:
 
-    https://1drv.ms/u/s!AjrSfO8SPX7NawtLJ69kpbErnyo?e=NkTrtA
-    code:
+    https://1drv.ms/u/s!AkpP3SXbL4TphKg2n0FPdwMiq7zYFg?e=mI8Nfh
+    code:s2fs
     
 Baidu Netdisk:
 
