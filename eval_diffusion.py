@@ -19,7 +19,7 @@ def parse_args_and_config():
     parser = argparse.ArgumentParser(description='Restoring Weather with Patch-Based Denoising Diffusion Models')
     parser.add_argument("--config", type=str, default="SAR.yml",
                         help="Path to the config file")
-    parser.add_argument('--resume', default='./scratch/ckpts/Synthesis_no_log_SAR_v27_ddpm.pth.tar', type=str,
+    parser.add_argument('--resume', default='./scratch/ckpts/xxx.pth.tar', type=str,
                         help='Path for the diffusion model checkpoint to load for evaluation')
     parser.add_argument("--grid_r", type=int, default=16,
                         help="Grid cell width r that defines the overlap between patches")
