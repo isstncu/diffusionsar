@@ -26,10 +26,7 @@ class DiffusiveRestoration:
     def restore(self, val_loader, r=None):
         validation = self.config.training.name
         # 单张图
-        # image_folder = os.path.join(self.args.image_folder, self.config.data.dataset, validation, self.config.training.version,"fix_lr0.000002") # results/images/SAR/Synthesis/v3
         image_folder = "/home/jbwei/Pke/test_syn_sar/output"
-        # 一组图
-        #image_folder = "/home/jbwei/190/ybma/code/data/SAR/despeckled/train/VH/" # results/images/SAR/Synthesis/v3
         with torch.no_grad():
             for i, (x, y) in enumerate(val_loader):
                 y = y[-1]
@@ -52,6 +49,6 @@ class DiffusiveRestoration:
     def overlapping_grid_indices(self, x_cond, output_size, r=None):
         _, c, h, w = x_cond.shape
         r = 16 if r is None else r
-        h_list = [i for i in range(0, h - output_size + 1, r)] # [0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512, 528, 544, 560, 576]
-        w_list = [i for i in range(0, w - output_size + 1, r)] # [0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512, 528, 544, 560, 576]
+        h_list = [i for i in range(0, h - output_size + 1, r)]
+        w_list = [i for i in range(0, w - output_size + 1, r)]
         return h_list, w_list
