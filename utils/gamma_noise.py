@@ -47,7 +47,7 @@ def x0_process(x0):
 
 def x0_process_v2(x0, lambda_):
     img = (x0 * 255).astype(np.uint8)
-    #img = x0#UC数据集不需要乘255
+    #img = x0 #The UC dataset does not need to be multiplied by 255
     img[img == 0] = 1
     log_img = np.log(img)
     img = stats.yeojohnson(log_img, lambda_)
@@ -57,7 +57,7 @@ def x0_process_v2(x0, lambda_):
 
 def x0_process_v3(x0, lambda_):
     img = (x0 * 255).astype(np.uint8)
-    # img = x0#UC数据集不需要乘255
+    # img = x0 #The UC dataset does not need to be multiplied by 255
     img[img == 0] = 1
     log_img = np.log(img)/np.log(255)
     img = stats.yeojohnson(log_img, lambda_)
@@ -128,4 +128,5 @@ def generalized_gamma(x0,theta_0=0.001):
     e = m.sample().to(x0.device)
     e = e - concentration * rates
     e = e / (1.0 - a).sqrt()
+
     return e
