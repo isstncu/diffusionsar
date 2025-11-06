@@ -22,4 +22,4 @@ if the links work improperly, please contact us via [wei-jing-bo@163.com](mailto
 
 2.Eval model
 
-You can use `python train_diffusion.py` to eval your pre-trained model.
+You can use `python eval_diffusion.py` to eval your pre-trained model.
