@@ -25,7 +25,7 @@ def parse_args_and_config():
                         help="Grid cell width r that defines the overlap between patches")
     parser.add_argument("--sampling_timesteps", type=int, default=25,
                         help="Number of implicit sampling steps")
-    parser.add_argument("--image_folder", default='result/images/', type=str,
+    parser.add_argument("--image_folder", default='./result/images/', type=str,
                         help="Location to save restored images")
     parser.add_argument('--seed', default=61, type=int, metavar='N',
                         help='Seed for initializing training (default: 61)')
@@ -81,4 +81,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
