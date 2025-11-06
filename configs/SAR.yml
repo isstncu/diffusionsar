@@ -42,7 +42,7 @@ sampling:
     last_only: True
     sample_type: "ddim" 
     schedule: "linear" # added
-    filelist: "test.txt" # "syn_val.txt" or "real_sar_test.txt" or "syn_test.txt" or "test.txt"
+    filelist: "syn_val" #"syn_val" or "syn_test" or "real_sar_test.txt"
 
 optim:
     weight_decay: 0.000
@@ -50,4 +50,5 @@ optim:
     lr: 0.00002
     amsgrad: False
     eps: 0.00000001
+
 
