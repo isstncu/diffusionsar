@@ -1,7 +1,6 @@
 import math
 import torch
 import torch.nn as nn
-from models.swin_transformer import BasicLayer
 # This script is from the following repositories
 # https://github.com/ermongroup/ddim
 # https://github.com/bahjat-kawar/ddrm
@@ -168,16 +167,6 @@ class AttnBlock(nn.Module):
                                         kernel_size=1,
                                         stride=1,
                                         padding=0)
-        # self.layer = BasicLayer(dim=in_channels,
-        #                         input_resolution=(resolution, resolution),
-        #                         depth=2,
-        #                         num_heads=in_channels // 32,
-        #                         window_size=8,
-        #                         mlp_ratio=1,
-        #                         qkv_bias=True, qk_scale=None,
-        #                         drop=0., attn_drop=0.,
-        #                         drop_path=0.,
-        #                         norm_layer=nn.LayerNorm)
 
     def forward(self, x):
         #print(x.shape)
@@ -204,12 +193,7 @@ class AttnBlock(nn.Module):
         h_ = h_.reshape(b, c, h, w)
 
         h_ = self.proj_out(h_)
-
-        #x_o = self.layer(x)
-
         return x+h_
-        #return x_o
-
 
 class DiffusionUNet(nn.Module):
     def __init__(self, config):
@@ -239,13 +223,6 @@ class DiffusionUNet(nn.Module):
                             self.temb_ch),
         ])
 
-
-        # downsampling,U-Net左部结构
-        # ResBlock层(128,128)*2+DownSample层(128) +
-        # ResBlock层(128,128)*2+DownSample层(128) +
-        # ResBlock层(128,256)+Attention层(256)+ResBlock层(256,256)+Attention层(256)+DownSample层(256) +
-        # ResBlock层(256,384)+Attention层(384)+ResBlock层(384,384)+Attention层(384)+DownSample层(384) +
-        # ResBlock层(384,512)+Attention层(512)+ResBlock层(512,512)+Attention层(512)+
         self.conv_in = torch.nn.Conv2d(in_channels, # 2
                                        self.ch, # 128
                                        kernel_size=3,
@@ -276,12 +253,7 @@ class DiffusionUNet(nn.Module):
                 down.downsample = Downsample(block_in, resamp_with_conv)
                 curr_res = curr_res // 2 # 64、32、16、8
             self.down.append(down)
-
-        # middle
-        # 中间部分结构, U-net中间部分 ResBlock层(512,512)+
-        #                         Attention层(512)+
-        #                         ResBlock层(512,512)
-        # 通道数和空间数都没有改变
+            
         self.mid = nn.Module()
         self.mid.block_1 = ResnetBlock(in_channels=block_in,
                                        out_channels=block_in,
@@ -293,12 +265,6 @@ class DiffusionUNet(nn.Module):
                                        temb_channels=self.temb_ch,
                                        dropout=dropout)
 
-        # upsampling,U-Net右部结构
-        # ResBlock层(1024,512)+Attention层(512)+ResBlock层(1024,512)+Attention层(512)+ResBlock层(896,512)+Attention层(512)+UpSample层(512) +
-        # ResBlock层(896,384)+Attention层(384)+ResBlock层(768,384)+Attention层(384)+ResBlock层(640,384)+Attention层(384)+UpSample层(384) +
-        # ResBlock层(640,256)+Attention层(256)+ResBlock层(512,256)+Attention层(256)+ResBlock层(384,256)+Attention层(256)+UpSample层(256) +
-        # ResBlock层(384,128)+ResBlock层(256,128)+ResBlock层(256,128)+UpSample层(128) +
-        # ResBlock层(256,128)+ResBlock层(256,128)+ResBlock层(256,128)+
         self.up = nn.ModuleList()
         for i_level in reversed(range(self.num_resolutions)): # 5 (4,3,2,1,0)
             block = nn.ModuleList()
@@ -341,7 +307,7 @@ class DiffusionUNet(nn.Module):
         temb = self.temb.dense[1](temb)
 
         # downsampling
-        hs = [self.conv_in(x)] # 先3×3卷积操作
+        hs = [self.conv_in(x)] 
         for i_level in range(self.num_resolutions): # 5 (0,1,2,3,4)
             for i_block in range(self.num_res_blocks): # 2 (0,1)
                 h = self.down[i_level].block[i_block](hs[-1], temb) # Resblock
@@ -372,3 +338,4 @@ class DiffusionUNet(nn.Module):
         h = nonlinearity(h)
         h = self.conv_out(h)
         return h
+
