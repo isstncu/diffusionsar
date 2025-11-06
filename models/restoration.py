@@ -1,9 +1,5 @@
-import pandas as pd
 import torch
-import torch.nn as nn
-from utils import metrics
 import utils
-import torchvision
 import os
 
 # def inverse_data_transform(X):
@@ -25,7 +21,6 @@ class DiffusiveRestoration:
 
     def restore(self, val_loader, r=None):
         validation = self.config.training.name
-        # 单张图
         image_folder = os.path.join('./result','ckpts', self.config.training.version, 'test') 
         with torch.no_grad():
             for i, (x, y) in enumerate(val_loader):
@@ -54,4 +49,5 @@ class DiffusiveRestoration:
         h_list = [i for i in range(0, h - output_size + 1, r)]
         w_list = [i for i in range(0, w - output_size + 1, r)]
         return h_list, w_list
+
 
