@@ -2,16 +2,16 @@ data:
     dataset: "SAR"
     image_size: 128
     channels: 1
-    num_workers: 8
-    data_dir: "scratch/"
+    num_workers: 32
+    data_dir: "scratch/" #"the path of the datasets"
     conditional: True
 
 model:
     in_channels: 1
     out_ch: 2 # 1 if not learn_sigma(iddpm) else 2
     ch: 128
-    ch_mult: [1, 1, 2, 3, 4] # 通道算子
-#    ch_mult: [1, 2, 3, 4] # 通道算子
+    ch_mult: [1, 1, 2, 3, 4] 
+#    ch_mult: [1, 2, 3, 4] 
     num_res_blocks: 2
     attn_resolutions: [32,16,8]
 #    attn_resolutions: [16,8] 
@@ -32,7 +32,7 @@ training:
     version: "v1"
     patch_n: 4
     batch_size: 5
-    n_epochs: 410
+    n_epochs: 410 #500
     n_iters: 200
     #snapshot_freq: 1000
     validation_freq: 160 
@@ -50,3 +50,4 @@ optim:
     lr: 0.00002
     amsgrad: False
     eps: 0.00000001
+
