@@ -97,7 +97,7 @@ def get_beta_schedule(beta_schedule, *, beta_start, beta_end, num_diffusion_time
 
 def noise_estimation_loss(model, x0, t, e, b):
     a = (1-b).cumprod(dim=0).index_select(0, t).view(-1, 1, 1, 1)
-    x = x0[:, 1:, :, :] * a.sqrt() + e * (1.0 - a).sqrt() # 加高斯噪声
+    x = x0[:, 1:, :, :] * a.sqrt() + e * (1.0 - a).sqrt() 
     output = model(torch.cat([x0[:, :1, :, :], x], dim=1), t.float()) # cat input 与 x_noisy
     return (e - output).square().sum(dim=(1, 2, 3)).mean(dim=0)
 
@@ -155,7 +155,6 @@ class DenoisingDiffusion(object):
     def normal_kl(self, mean1, logvar1, mean2, logvar2):
         """
         KL divergence between normal distributions parameterized by mean and log-variance.
-        由均值和对数方差参数化的正态分布之间的KL散度。
         """
         return 0.5 * (-1.0 + logvar2 - logvar1 + torch.exp(logvar1 - logvar2) + ((mean1 - mean2) ** 2) * torch.exp(
             -logvar2))
@@ -177,25 +176,23 @@ class DenoisingDiffusion(object):
         x0 = x[:, 1:, :, :]
         x_t = (self.extract(sqrt_alphas_cumprod, t, x0.shape) * x0
                + self.extract(sqrt_one_minus_alphas_cumprod, t, x0.shape) * noise)
-        #print(x_t.shape)
-        #utils.logging.save_image(x_t, os.path.join('results/images/SAR/Synthesis_no_log_SAR/v29/x_t_output.tif'))
 
         # model output
         model_output = model(torch.cat([x[:, :1, :, :], x_t], dim=1),
                              t.float())
 
         # calculating kl loss for learned variance (interpolation)
-        # q_posterior: 计算扩散后验的均值和方差 q(x_{t-1} | x_t, x_0)
+        # q_posterior: Calculate the mean and variance of the diffusion posterior q(x_{t-1} | x_t, x_0)
         posterior_mean_coef1 = betas * torch.sqrt(alphas_cumprod_prev) / (1. - alphas_cumprod)
         posterior_mean_coef2 = (1. - alphas_cumprod_prev) * torch.sqrt(alphas) / (1. - alphas_cumprod)
         posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
         posterior_log_variance_clipped = torch.log(posterior_variance.clamp(min=1e-20))
-        # 后验均值和方差
+        # Posterior mean and variance 
         true_mean = (self.extract(posterior_mean_coef1, t, x_t.shape) * x0
                      + self.extract(posterior_mean_coef2, t, x_t.shape) * x_t)
         true_log_variance_clipped = self.extract(posterior_log_variance_clipped, t, x_t.shape)
 
-        # p_mean_variance: 传入的是x_t,预测t−1时刻的 均值mean和方差variance
+        # p_mean_variance: The incoming value is x_t, which predicts the mean and variance at time t-1
         sqrt_recip_alphas_cumprod = torch.sqrt(1. / alphas_cumprod)
         sqrt_recipm1_alphas_cumprod = torch.sqrt(1. / alphas_cumprod - 1)
         pred_noise, var_interp_frac_unnormalized = model_output.chunk(2, dim=1)
@@ -225,10 +222,6 @@ class DenoisingDiffusion(object):
         kl_losses = torch.where(t == 0, decoder_nll, kl).mean(dim=0)
         # simple loss - predicting noise, x0, or x_prev
         kl_loss_weight = 10000
-        #mse_losses = self.mse(noise, pred_noise)
-        #print(pred_noise.shape)
-        length = pred_noise.shape[0]
-        mse = torch.nn.MSELoss()
         mse_losses = (noise - pred_noise).square().sum(dim=(1, 2, 3)).mean(dim=0)
         print('MSE:{0:.6f}, KL:{1:.6f}'.format(mse_losses, kl_losses * kl_loss_weight))
         return mse_losses + kl_loss_weight * kl_losses
@@ -265,14 +258,15 @@ class DenoisingDiffusion(object):
                 self.step += 1
 
                 x = x.to(self.device)
-                #x = data_transform(x)
-                noise = torch.randn_like(x[:, 1:, :, :])
+                # x = data_transform(x)
+                #noise = torch.randn_like(x[:, 1:, :, :]) #gaussian noise
+                noise = x[:,2:,:,:] #gamma noise
                 b = self.betas
 
                 # antithetic sampling
                 t = torch.randint(low=0, high=self.num_timesteps, size=(n // 2 + 1,)).to(self.device)
                 t = torch.cat([t, self.num_timesteps - t - 1], dim=0)[:n]
-                #loss = noise_estimation_loss(self.model, x, t, noise, b) # 1.损失函数可以换成DG(despeckling gain),优于MSE和MAE
+                # loss = noise_estimation_loss(self.model, x, t, noise, b) # The loss function can be replaced by DG(despeckling gain), which is superior to MSE and MA
                 loss = self.p_losses(self.model, x, t, noise, b)
 
                 if self.step % 10 == 0:
@@ -284,12 +278,14 @@ class DenoisingDiffusion(object):
                 self.ema_helper.update(self.model)
                 data_start = time.time()
 
-                if (self.step-38000+1) % self.config.training.validation_freq == 0:
-                    loss_function = Loss(self.device, 10)
+                if self.step % self.config.training.validation_freq == 0:
+                    loss_function = Loss(self.device, 10) # DG + TV
                     self.model.eval()
                     DG_loss, TV_loss, val_loss, ssim, psnr = self.sample_validation_patches(val_loader, self.step, loss_function)
                     print("validating->ssim:{:.4f}, psnr:{:.4f}, DG_loss:{:.4f}, TV_loss:{:.4f}, loss:{:.4f}".format(ssim, psnr, DG_loss, TV_loss, val_loss))
-                    with open(os.path.join(self.config.data.data_dir, 'ckpts', 'fix', '{}_{}_fix_lr0.00001.txt'.format(self.config.training.name, self.config.training.version)), mode="a", encoding="utf-8") as f:
+                    if not os.path.exists(os.path.join('./result', 'ckpts', self.config.training.version)):
+                        os.makedirs(os.path.join('./result', 'ckpts', self.config.training.version))
+                    with open(os.path.join('./result', 'ckpts', self.config.training.version, '{}_{}.txt'.format(self.config.training.name, self.config.training.version)), mode="a", encoding="utf-8") as f:
                         f.write(f"step: {self.step}, ssim: {ssim:.4f}, psnr: {psnr:.4f}, DG_loss: {DG_loss:.4f}, TV_loss: {TV_loss:.4f}, loss: {val_loss}, least_error: {least_loss}, time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                         f.write("\n")
                     f.close()
@@ -297,7 +293,7 @@ class DenoisingDiffusion(object):
                 # if self.step % self.config.training.snapshot_freq == 0 or self.step == 1:
                     if val_loss < least_loss:
                         least_loss = val_loss
-                        with open(os.path.join(self.config.data.data_dir, 'ckpts', 'fix', '{}_{}_fix_lr0.00001.txt'.format(self.config.training.name, self.config.training.version)), mode="a", encoding="utf-8") as f:
+                        with open(os.path.join('./result', 'ckpts', self.config.training.version, '{}_{}.txt'.format(self.config.training.name, self.config.training.version)), mode="a", encoding="utf-8") as f:
                             f.write(
                                 f"step: {self.step}, least_error: {least_loss}, saving checkpoint!")
                             f.write("\n")
@@ -311,9 +307,9 @@ class DenoisingDiffusion(object):
                             'params': self.args,
                             'config': self.config
                         }, filename=os.path.join(
-                            self.config.data.data_dir, 'ckpts', 'fix', '{}_{}_ddpm_lr0.00001_best_epoch_{}'.format(self.config.training.name, self.config.training.version, epoch)
+                            './result', 'ckpts', self.config.training.version, '{}_{}_ddpm_best_epoch_{}'.format(self.config.training.name, self.config.training.version, epoch)
                         ))
-            if (epoch+1-380) % 5 == 0:
+            if (epoch+1-350) % 5 == 0:
                 utils.logging.save_checkpoint({
                     'epoch': epoch + 1,
                     'step': self.step,
@@ -323,22 +319,9 @@ class DenoisingDiffusion(object):
                     'params': self.args,
                     'config': self.config
                 }, filename=os.path.join(
-                    self.config.data.data_dir, 'ckpts', 'fix',
-                    '{}_{}_ddpm_lr0.00001_fix_epoch_{}'.format(self.config.training.name, self.config.training.version, epoch+1)
+                    './result', 'ckpts', self.config.training.version,
+                    '{}_{}_ddpm_fix_epoch_{}'.format(self.config.training.name, self.config.training.version, epoch+1)
                 ))
-            # if epoch+1 >= 300 and epoch+1 % 25 ==0:
-            #     utils.logging.save_checkpoint({
-            #         'epoch': epoch + 1,
-            #         'step': self.step,
-            #         'state_dict': self.model.state_dict(),
-            #         'optimizer': self.optimizer.state_dict(),
-            #         'ema_helper': self.ema_helper.state_dict(),
-            #         'params': self.args,
-            #         'config': self.config
-            #     }, filename=os.path.join(
-            #         self.config.data.data_dir, 'ckpts',
-            #         '{}_epoch{}_ddpm'.format(self.config.training.name, epoch+1)
-            #     ))
 
     # ddim
     def sample_image(self, x_cond, x, last=True, patch_locs=None, patch_size=None):
@@ -357,7 +340,7 @@ class DenoisingDiffusion(object):
             raise NotImplementedError
 
     def sample_validation_patches(self, val_loader, step, loss_function):
-        image_folder = os.path.join(self.args.image_folder, self.config.training.name + self.config.training.version)#results/images/SAR64
+        image_folder = os.path.join('./result','ckpts', self.config.training.version, 'eval')
         with torch.no_grad():
             print(f"Processing a single batch of validation images at step: {step}")
             for i, (x, y) in enumerate(val_loader):
@@ -365,9 +348,11 @@ class DenoisingDiffusion(object):
                 break
             n = x.size(0)
             x_cond = x[:, :1, :, :].to(self.device)
-            target = x[:, 1:, :, :].to(self.device)
+            target = x[:, 1:2, :, :].to(self.device)
             #x_cond = data_transform(x_cond)
-            x = torch.randn(n, 1, self.config.data.image_size, self.config.data.image_size, device=self.device)
+            # x = torch.randn(n, 1, self.config.data.image_size, self.config.data.image_size, device=self.device)  #gaussian noise
+            x = x[:, 2:, :, :].to(self.device) #gamma noise
+            
             x = self.sample_image(x_cond, x).to(self.device)
             #x = inverse_data_transform(x).to(self.device)
             #x_cond = inverse_data_transform(x_cond)
@@ -386,3 +371,4 @@ class DenoisingDiffusion(object):
                 utils.logging.save_image(x[i], os.path.join(image_folder, str(step), f"{i}.tif"))
 
         return DG_loss, TV_loss, loss, ssim, psnr
+
