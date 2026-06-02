@@ -167,7 +167,7 @@ class DenoisingDiffusion(object):
         sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
 
         # q_sample
-        x0 = x[:, 1:, :, :]
+        x0 = x[:, 1:2, :, :]
         x_t = (self.extract(sqrt_alphas_cumprod, t, x0.shape) * x0
                + self.extract(sqrt_one_minus_alphas_cumprod, t, x0.shape) * noise)
 
