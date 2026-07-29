@@ -244,7 +244,7 @@ class DenoisingDiffusion(object):
             print('epoch: ', epoch)
             data_start = time.time()
             data_time = 0
-            for i, (x, y) in enumerate(train_loader):
+            for i, (x, y, lambda_) in enumerate(train_loader):
                 x = x.flatten(start_dim=0, end_dim=1) if x.ndim == 5 else x
                 n = x.size(0)
                 data_time += time.time() - data_start
@@ -337,7 +337,7 @@ class DenoisingDiffusion(object):
         image_folder = os.path.join('./result','ckpts', self.config.training.version, 'eval')
         with torch.no_grad():
             print(f"Processing a single batch of validation images at step: {step}")
-            for i, (x, y) in enumerate(val_loader):
+            for i, (x, y, lambda_) in enumerate(val_loader):
                 x = x.flatten(start_dim=0, end_dim=1) if x.ndim == 5 else x
                 break
             n = x.size(0)
@@ -361,8 +361,10 @@ class DenoisingDiffusion(object):
                     ssim = cal_ssim
                 if cal_psnr > psnr:
                     psnr = cal_psnr
-                utils.logging.save_image2(target[i],y, os.path.join(image_folder, str(step), f"{i}_target.tif"))
-                utils.logging.save_image2(x[i],y, os.path.join(image_folder, str(step), f"{i}.tif"))
+                #utils.logging.save_image(target[i], os.path.join(image_folder, str(step), f"{i}_target.tif"))
+                #utils.logging.save_image(x[i], os.path.join(image_folder, str(step), f"{i}.tif"))
+                utils.logging.save_image2(target[i],lambda_, os.path.join(image_folder, str(step), f"{i}_target.tif"))
+                utils.logging.save_image2(x[i],lambda_, os.path.join(image_folder, str(step), f"{i}.tif"))
 
         return DG_loss, TV_loss, loss, ssim, psnr
 
