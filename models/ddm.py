@@ -363,8 +363,8 @@ class DenoisingDiffusion(object):
                     psnr = cal_psnr
                 #utils.logging.save_image(target[i], os.path.join(image_folder, str(step), f"{i}_target.tif"))
                 #utils.logging.save_image(x[i], os.path.join(image_folder, str(step), f"{i}.tif"))
-                utils.logging.save_image_v2(target[i],lambda_, os.path.join(image_folder, str(step), f"{i}_target.tif"))
-                utils.logging.save_image_v2(x[i],lambda_, os.path.join(image_folder, str(step), f"{i}.tif"))
+                utils.logging.save_image_v2(target[i],lambda_[i], os.path.join(image_folder, str(step), f"{i}_target.tif"))
+                utils.logging.save_image_v2(x[i],lambda_[i], os.path.join(image_folder, str(step), f"{i}.tif"))
 
         return DG_loss, TV_loss, loss, ssim, psnr
 
