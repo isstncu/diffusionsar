@@ -20,7 +20,7 @@ def calculate_psnr(img1, img2, test_y_channel=False):
     """
 
     assert img1.shape == img2.shape, (f'Image shapes are differnet: {img1.shape}, {img2.shape}.')
-    assert img1.shape[2] == 3
+    #assert img1.shape[2] == 3
     img1 = img1.astype(np.float64)
     img2 = img2.astype(np.float64)
 
@@ -90,7 +90,7 @@ def calculate_ssim(img1, img2, test_y_channel=False):
     """
 
     assert img1.shape == img2.shape, (f'Image shapes are differnet: {img1.shape}, {img2.shape}.')
-    assert img1.shape[2] == 3
+    #assert img1.shape[2] == 3
     img1 = img1.astype(np.float64)
     img2 = img2.astype(np.float64)
 
@@ -99,8 +99,9 @@ def calculate_ssim(img1, img2, test_y_channel=False):
         img2 = to_y_channel(img2)
 
     ssims = []
-    for i in range(img1.shape[2]):
-        ssims.append(_ssim(img1[..., i], img2[..., i]))
+    ssims.append(_ssim(img1, img2))
+    #for i in range(img1.shape[2]):
+        #ssims.append(_ssim(img1[..., i], img2[..., i]))
     return np.array(ssims).mean()
 
 
