@@ -4,13 +4,22 @@ import torch
 
 # This script is adapted from the following repository: https://github.com/JingyunLiang/SwinIR
 
+def change_image(img):
+    img = torch.clamp(img, 0.0, 1.0)
+    img = img.squeeze().cpu().numpy()
+    img = (img*255).astype(np.uint8)
+    return img
 
-def calculate_psnr(img1, img2, data_range=1.0):
-    """Calculate PSNR for images in the range [0, 1]."""
+def calculate_psnr(img1, img2, data_range=255):
+    """Calculate PSNR for images in the range [0, 255]."""
 
     assert img1.shape == img2.shape, (f'Image shapes are differnet: {img1.shape}, {img2.shape}.')
-    img1 = img1.detach().cpu().numpy().astype(np.float64)
-    img2 = img2.detach().cpu().numpy().astype(np.float64)
+    
+    img1=change_image(img1)
+    img2=change_image(img2)
+    
+    img1 = img1.astype(np.float64)
+    img2 = img2.astype(np.float64)
 
     mse = np.mean((img1 - img2) ** 2)
     if mse == 0:
@@ -19,7 +28,7 @@ def calculate_psnr(img1, img2, data_range=1.0):
     #return 10.0 * np.log10(data_range**2 / mse)
 
 
-def _ssim(img1, img2, data_range=1.0):
+def _ssim(img1, img2, data_range=255):
     """Calculate SSIM for two single-channel [H, W] images."""
 
     C1 = (0.01 * data_range) ** 2
@@ -47,17 +56,16 @@ def _ssim(img1, img2, data_range=1.0):
 
     return np.mean(numerator / denominator)
 
-def calculate_ssim(img1, img2, data_range=1.0):
+def calculate_ssim(img1, img2, data_range=255):
     assert img1.shape == img2.shape, (
         f'Image shapes are different: {img1.shape}, {img2.shape}.'
     )
 
-    img1 = img1.detach().cpu().numpy().astype(np.float64)
-    img2 = img2.detach().cpu().numpy().astype(np.float64)
+    img1=change_image(img1)
+    img2=change_image(img2)
 
-    # [1,H,W] 或 [1,1,H,W] 转为 [H,W]
-    img1 = np.squeeze(img1)
-    img2 = np.squeeze(img2)
+    img1 = img1.astype(np.float64)
+    img2 = img2.astype(np.float64)
 
     if img1.ndim != 2:
         raise ValueError(
