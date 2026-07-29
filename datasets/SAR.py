@@ -170,7 +170,7 @@ class SARDataset(torch.utils.data.Dataset):
             input_img = self.n_random_crops(input_img, x, y, h, w) # 128x128
             gt_img = self.n_random_crops(gt_img, x, y, h, w) # 128x128
 
-            gamma_noise = self.n_random_crops(gt_img, x, y, h, w)
+            gamma_noise = self.n_random_crops(noise, x, y, h, w)
             outputs = [torch.cat(
                     [self.transforms(input_img[i]), self.transforms(gt_img[i])],self.transforms(gamma_noise[i])], dim=0)
                         for i in range(self.n)]
