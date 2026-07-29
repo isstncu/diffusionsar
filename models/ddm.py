@@ -355,8 +355,8 @@ class DenoisingDiffusion(object):
 
             ssim, psnr = 0, 0
             for i in range(n):
-                cal_ssim = utils.metrics.calculate_ssim(x[i].unsqueeze(0), target[i].unsqueeze(0))
-                cal_psnr = utils.metrics.calculate_psnr(x[i].unsqueeze(0), target[i].unsqueeze(0))
+                cal_ssim = utils.metrics.calculate_ssim(x[i], target[i])
+                cal_psnr = utils.metrics.calculate_psnr(x[i], target[i])
                 if cal_ssim > ssim:
                     ssim = cal_ssim
                 if cal_psnr > psnr:
