@@ -23,7 +23,7 @@ class DiffusiveRestoration:
         validation = self.config.training.name
         image_folder = os.path.join('./result','ckpts', self.config.training.version, 'test') 
         with torch.no_grad():
-            for i, (x, y) in enumerate(val_loader):
+            for i, (x, y, lambda_) in enumerate(val_loader):
                 y = y[-1]
                 print(f"starting processing from image {y}")
                 x = x.flatten(start_dim=0, end_dim=1) if x.ndim == 5 else x
