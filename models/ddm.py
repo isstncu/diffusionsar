@@ -361,8 +361,8 @@ class DenoisingDiffusion(object):
                     ssim = cal_ssim
                 if cal_psnr > psnr:
                     psnr = cal_psnr
-                utils.logging.save_image(target[i], os.path.join(image_folder, str(step), f"{i}_target.tif"))
-                utils.logging.save_image(x[i], os.path.join(image_folder, str(step), f"{i}.tif"))
+                utils.logging.save_image2(target[i],y, os.path.join(image_folder, str(step), f"{i}_target.tif"))
+                utils.logging.save_image2(x[i],y, os.path.join(image_folder, str(step), f"{i}.tif"))
 
         return DG_loss, TV_loss, loss, ssim, psnr
 
