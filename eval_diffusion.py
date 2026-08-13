@@ -11,21 +11,25 @@ import models
 import datasets
 import utils
 from models import DenoisingDiffusion, DiffusiveRestoration
-
-os.environ['CUDA_LAUNCH_BLOCKING'] = "3"
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+from datasets.data import Dataset_test
+from torch.utils.data import DataLoader
+from pathlib import Path
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 def parse_args_and_config():
     parser = argparse.ArgumentParser(description='Restoring Weather with Patch-Based Denoising Diffusion Models')
-    parser.add_argument("--config", type=str, default="SAR.yml",
+    parser.add_argument("--config", type=str, default='mydata.yml',
                         help="Path to the config file")
-    parser.add_argument('--resume', default='./result/ckpts/xxx.pth.tar', type=str,
+    parser.add_argument('--resume', default='results/ckpts/data_ddpmxxx.pth.tar', type=str,
                         help='Path for the diffusion model checkpoint to load for evaluation')
+    parser.add_argument('--loss_dir', type=Path, default=('results/'),
+                        help='train dataset path')
     parser.add_argument("--grid_r", type=int, default=16,
                         help="Grid cell width r that defines the overlap between patches")
-    parser.add_argument("--sampling_timesteps", type=int, default=25,
+    parser.add_argument("--sampling_timesteps", type=int, default=25, #25
                         help="Number of implicit sampling steps")
-    parser.add_argument("--image_folder", default='./result/images/', type=str,
+    parser.add_argument("--image_folder", default='results/', type=str, 
                         help="Location to save restored images")
     parser.add_argument('--seed', default=61, type=int, metavar='N',
                         help='Seed for initializing training (default: 61)')
@@ -69,17 +73,17 @@ def main():
 
     # data loading
     print("=> using dataset '{}'".format(config.data.dataset))
-    DATASET = datasets.__dict__[config.data.dataset](config)
-    _, val_loader = DATASET.get_loaders(parse_patches=False)
+    test_dir = os.path.join(config.data.data_dir, 'test')
+    test_set = Dataset_test(test_dir)
+    test_loader = DataLoader(test_set, batch_size=config.sampling.batch_size, num_workers=config.data.num_workers)
+    image_dirs = iter([p for p in Path(test_dir).iterdir() if p.is_dir()])
 
     # create model
     print("=> creating denoising-diffusion model with wrapper...")
     diffusion = DenoisingDiffusion(args, config)
     model = DiffusiveRestoration(diffusion, args, config)
-    model.restore(val_loader, r=args.grid_r)
+    model.restore(test_loader, image_dirs, r=args.grid_r)
 
 
 if __name__ == '__main__':
     main()
-
-
