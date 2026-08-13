@@ -1,4 +1,4 @@
-from datasets.SAR import *
+from datasets.data import *
 
-__all__ = ["SAR"]
+__all__ = ["data"]
 
