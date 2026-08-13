@@ -26,8 +26,9 @@ def generalized_steps(x, x_cond, seq, model, b, eta=0.):
             at_next = compute_alpha(b, next_t.long())
             xt = xs[-1].to('cuda') 
 
-            et, _ = model(torch.cat([x_cond, xt], dim=1), t).chunk(2, dim=1) 
             #et = model(torch.cat([x_cond, xt], dim=1), t)
+            et, _ = model(torch.cat([x_cond, xt], dim=1), t).chunk(2, dim=1) 
+            
             x0_t = (xt - et * (1 - at).sqrt()) / at.sqrt()
             x0_preds.append(x0_t.to('cpu'))
 
@@ -62,8 +63,8 @@ def generalized_steps_overlapping(x, x_cond, seq, model, b, eta=0., corners=None
                 xt_patch = torch.cat([crop(xt, hi, wi, p_size, p_size) for (hi, wi) in corners], dim=0)
                 x_cond_patch = torch.cat([crop(x_cond, hi, wi, p_size, p_size) for (hi, wi) in corners], dim=0)
                 for i in range(0, len(corners), manual_batching_size): # len(corners) = 1369
-                    outputs, _ = model(torch.cat([x_cond_patch[i:i+manual_batching_size],
-                                               xt_patch[i:i+manual_batching_size]], dim=1), t).chunk(2, dim=1) 
+                    #outputs = model(torch.cat([x_cond_patch[i:i+manual_batching_size],xt_patch[i:i+manual_batching_size]], dim=1), t) 
+                    outputs, _ = model(torch.cat([x_cond_patch[i:i+manual_batching_size],xt_patch[i:i+manual_batching_size]], dim=1), t).chunk(2, dim=1) 
                     for idx, (hi, wi) in enumerate(corners[i:i+manual_batching_size]):
                         et_output[0, :, hi:hi + p_size, wi:wi + p_size] += outputs[idx]
             else:
