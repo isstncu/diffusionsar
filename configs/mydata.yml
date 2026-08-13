@@ -1,54 +1,48 @@
 data:
-    dataset: "SAR"
-    image_size: 128
-    channels: 1
+    dataset: "data"
+    patch_size: 128
     num_workers: 32
-    data_dir: "scratch/" #"the path of the datasets"
+    data_dir: 'data/S2FS' #"the path of the datasets"
     conditional: True
+    parse_patches: True
 
 model:
     in_channels: 1
     out_ch: 2 # 1 if not learn_sigma(iddpm) else 2
     ch: 128
     ch_mult: [1, 1, 2, 3, 4] 
-#    ch_mult: [1, 2, 3, 4] 
     num_res_blocks: 2
     attn_resolutions: [32,16,8]
-#    attn_resolutions: [16,8] 
     dropout: 0.0
     ema_rate: 0.999
     ema: True
     resamp_with_conv: True
 
 diffusion:
-    mode: train # or valid
     beta_schedule: linear
-    beta_start: 0.0001
-    beta_end: 0.02
-    num_diffusion_timesteps: 1000
+    beta_start: 0.0001 
+    beta_end: 0.02 
+    num_diffusion_timesteps: 1000 #or test 80 
 
 training:
-    name: "SAR_despeckling"
-    version: "v1"
     patch_n: 4
-    batch_size: 5
-    n_epochs: 410 #500
-    n_iters: 200
-    #snapshot_freq: 1000
-    validation_freq: 160 
+    batch_size: 10
+    n_epochs: 600 
+    
+    n_iters: 2000000 
+    validation_epoch: 10
 
 sampling:
     batch_size: 1
     last_only: True
-    sample_type: "ddim" 
     schedule: "linear" # added
-    filelist: "syn_val" #"syn_val" or "syn_test" or "real_sar_test.txt"
+    sample_type: generalized
 
 optim:
     weight_decay: 0.000
     optimizer: "Adam"
-    lr: 0.00002
+    lr: 0.000002  #0.00002
     amsgrad: False
     eps: 0.00000001
-
-
+    beta1: 0.9 
+    beta2: 0.999
