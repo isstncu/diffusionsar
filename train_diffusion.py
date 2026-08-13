@@ -12,22 +12,25 @@ import models
 import datasets
 import utils
 from models import DenoisingDiffusion
-
-os.environ['CUDA_LAUNCH_BLOCKING'] = "3"
-os.environ['CUDA_VISIBLE_DEVICES'] = "3"
+import wandb
+from pathlib import Path
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 def parse_args_and_config():
     parser = argparse.ArgumentParser(description='Training Patch-Based Denoising Diffusion Models')
     parser.add_argument("--project", type=str, default="SAR-Diffusion")
-    parser.add_argument("--model-name", type=str, default="SAR_Despeckling")
-    parser.add_argument("--config", default='SAR.yml', type=str,
+    
+    parser.add_argument("--config", type=str, default='mydata.yml',
                         help="Path to the config file")
-    parser.add_argument('--resume', default='./result/ckpts/SAR_Despeckling_ddpm.pth.tar', type=str,
+    parser.add_argument('--resume', default='results/ckpts/data_ddpm575.pth.tar', type=str, 
                         help='Path for checkpoint to load and resume')
     parser.add_argument("--sampling_timesteps", type=int, default=25,
-                        help="Number of implicit sampling steps for validation image patches") # ddim
-    parser.add_argument("--image_folder", default='./result/images/v1/', type=str,
+                        help="Number of implicit sampling steps for validation image patches")
+    parser.add_argument("--image_folder", default='results/', type=str,
                         help="Location to save restored validation image patches")
+    parser.add_argument('--loss_dir', type=Path, default=('results/'),
+                        help='train dataset path')
     parser.add_argument('--seed', default=61, type=int, metavar='N',
                         help='Seed for initializing training (default: 61)')
     args = parser.parse_args()
@@ -52,8 +55,6 @@ def dict2namespace(config):
 
 def main():
     args, config = parse_args_and_config()
-
-    # setup device to run
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print("Using device: {}".format(device))
     config.device = device
@@ -73,8 +74,7 @@ def main():
     print("=> creating denoising-diffusion model...")
     diffusion = DenoisingDiffusion(args, config)
     diffusion.train(DATASET)
-
+    #wandb.finish()
 
 if __name__ == "__main__":
     main()
-
